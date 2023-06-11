@@ -1,0 +1,23 @@
+body {
+    background-color: #121212;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#game-title {
+    color: #DDDDDD;
+    text-transform: uppercase;
+    font-family: sans-serif; /* Temporary until Google font */
+}
+
+.game-container {
+    background-color: #444444;
+    border: #232323;
+    border-radius: 5px;
+    height: 500px;
+    width: 750px;
+}
