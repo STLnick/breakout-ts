@@ -1,5 +1,4 @@
 import './style.css'
-import {setupCounter} from './counter.ts'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <h1 id="game-title">Breakout Game</h1>
@@ -7,5 +6,3 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <!-- TODO -->
     </div>
 `;
-
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!);
