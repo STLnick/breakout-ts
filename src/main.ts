@@ -1,15 +1,18 @@
 import './style.css';
+import Player from './classes/Player.ts';
 
+// Constants
 const BLOCK_HEIGHT = 15;
 const BLOCK_WIDTH = 75;
 const BLOCK_PADDING = 16;
-
 const CONTAINER_PADDING = 16;
 const CONTAINER_WIDTH = 750;
-
 const COLUMNS = 5;
 const ROWS = 3;
 const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
+
+// Global variables
+let player: Player;
 
 function layoutBlocks(container: HTMLDivElement) {
     let block: HTMLDivElement;
@@ -38,21 +41,37 @@ function layoutBlocks(container: HTMLDivElement) {
     }
 }
 
-function layoutPlayer(container: HTMLDivElement) {
+function setupPlayer(container: HTMLDivElement) {
     const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
-    const player = document.createElement('div');
+    const playerBlock = document.createElement('div');
 
-    player.classList.add('player-block');
-    player.style.position = 'absolute';
-    player.style.height = `${BLOCK_HEIGHT}px`;
-    player.style.width = `${BLOCK_WIDTH}px`;
-    player.style.left = `${start}px`;
-    player.style.bottom = '1rem';
+    playerBlock.classList.add('player-block');
+    playerBlock.style.position = 'absolute';
+    playerBlock.style.height = `${BLOCK_HEIGHT}px`;
+    playerBlock.style.width = `${BLOCK_WIDTH}px`;
+    playerBlock.style.left = `${start}px`;
+    playerBlock.style.bottom = '1rem';
 
-    container.appendChild(player);
+    container.appendChild(playerBlock);
+
+    player = new Player(
+        playerBlock,
+        start,
+        CONTAINER_PADDING,
+        CONTAINER_WIDTH - BLOCK_WIDTH + CONTAINER_PADDING
+    );
+
+    // Add listeners for Player Movement
+    window.addEventListener('keydown', function (evt) {
+        if (evt.key === 'ArrowLeft') {
+            player.move('LEFT');
+        } else if (evt.key === 'ArrowRight') {
+            player.move('RIGHT');
+        }
+    });
 }
 
-function layoutGame(attempts: number) {
+function layoutGame(attempts = 0) {
     const container = document.querySelector<HTMLDivElement>('.game-container');
 
     if (container === null) {
@@ -61,11 +80,13 @@ function layoutGame(attempts: number) {
             throw new Error('Error finding Game Container - unable to layout game');
         }
         // Try to layout again in 75ms
-        setTimeout(() => { layoutGame(attempts + 1) }, 75);
+        setTimeout(() => {
+            layoutGame(attempts + 1)
+        }, 75);
         return;
     }
 
-    layoutPlayer(container);
+    setupPlayer(container);
     layoutBlocks(container);
 }
 
@@ -78,4 +99,4 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </div>
 `;
 
-layoutGame(0);
+layoutGame();
