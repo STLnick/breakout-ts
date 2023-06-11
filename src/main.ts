@@ -17,7 +17,7 @@ function layoutBlocks(container: HTMLDivElement) {
     let topStart: number;
 
     for (let i = 0; i < ROWS; i++) {
-        leftStart = (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
+        leftStart = CONTAINER_PADDING + (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
         topStart = CONTAINER_PADDING + i * (BLOCK_HEIGHT + BLOCK_PADDING);
 
         for (let j = 0; j < COLUMNS; j++) {
