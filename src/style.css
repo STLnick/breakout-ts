@@ -15,9 +15,21 @@ body {
 }
 
 .game-container {
-    background-color: #444444;
+    position: relative;
+    background-color: #666666;
     border: #232323;
     border-radius: 5px;
     height: 500px;
     width: 750px;
+    padding: 16px;
+}
+
+.layout-block {
+    background-color: white;
+}
+
+.player-block {
+    background-color: darkblue;
+    height: 15px;
+    width: 75px;
 }
