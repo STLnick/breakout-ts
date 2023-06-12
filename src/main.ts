@@ -1,11 +1,20 @@
 import './style.css';
 import Player from './classes/Player.ts';
+import { getRandomNumberBetween } from "./utils.ts";
+
+interface Ball {
+    element: HTMLDivElement;
+    rise: number;
+    run: number;
+    velocity: number;
+}
 
 // Constants
 const BLOCK_HEIGHT = 15;
 const BLOCK_WIDTH = 75;
 const BLOCK_PADDING = 16;
 const CONTAINER_PADDING = 16;
+const CONTAINER_HEIGHT = 500;
 const CONTAINER_WIDTH = 750;
 const COLUMNS = 5;
 const ROWS = 3;
@@ -13,6 +22,7 @@ const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
 
 // Global variables
 let player: Player;
+let ball: Ball;
 
 function layoutBlocks(container: HTMLDivElement) {
     let block: HTMLDivElement;
@@ -27,8 +37,8 @@ function layoutBlocks(container: HTMLDivElement) {
             block = document.createElement('div');
 
             block.classList.add('layout-block');
+            block.classList.add(`layout-block--row-${i}`);
             block.classList.add(`layout-block--row-${i}--col-${j}`);
-            block.style.position = 'absolute';
             block.style.height = `${BLOCK_HEIGHT}px`;
             block.style.width = `${BLOCK_WIDTH}px`;
             block.style.left = `${leftStart}px`;
@@ -41,16 +51,55 @@ function layoutBlocks(container: HTMLDivElement) {
     }
 }
 
+function setupBall(container: HTMLDivElement) {
+    ball = {
+        element: document.createElement('div'),
+        rise: getRandomNumberBetween(-1, 1),
+        run: getRandomNumberBetween(-1, 1),
+        velocity: getRandomNumberBetween(3, 8),
+    };
+
+    ball.element.classList.add('breakout-ball');
+    ball.element.style.left = `${CONTAINER_WIDTH / 2}px`;
+    ball.element.style.top = `${CONTAINER_HEIGHT / 2}px`;
+
+    container.appendChild(ball.element);
+
+    const ballObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            console.log({ entry })
+            if (entry.isIntersecting) {
+                console.log('INTERSECTING');
+            }
+        })
+    });
+    ballObserver.observe(ball.element);
+
+
+
+    // Send ball flying (should be a constant loop no stop (until out of bottom?)
+    const interval = setInterval(() => {
+        const leftVal = parseFloat(ball.element.style.left.split('px')[0]);
+        const topVal = parseFloat(ball.element.style.top.split('px')[0]);
+
+        ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
+        ball.element.style.top = `${topVal + (-ball.rise * ball.velocity)}px`;
+    }, 50);
+
+    // Cleanup ball animation interval
+    window.addEventListener('unload', () => {
+        clearInterval(interval);
+    });
+}
+
 function setupPlayer(container: HTMLDivElement) {
-    const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
+    const start = CONTAINER_PADDING + (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
     const playerBlock = document.createElement('div');
 
     playerBlock.classList.add('player-block');
-    playerBlock.style.position = 'absolute';
     playerBlock.style.height = `${BLOCK_HEIGHT}px`;
     playerBlock.style.width = `${BLOCK_WIDTH}px`;
     playerBlock.style.left = `${start}px`;
-    playerBlock.style.bottom = '1rem';
 
     container.appendChild(playerBlock);
 
@@ -88,6 +137,7 @@ function layoutGame(attempts = 0) {
 
     setupPlayer(container);
     layoutBlocks(container);
+    setupBall(container);
 }
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `

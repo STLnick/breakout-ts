@@ -24,12 +24,35 @@ body {
     padding: 16px;
 }
 
+.breakout-ball {
+    position: absolute;
+    background-color: rgba(255, 0, 0, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    height: 20px;
+    width: 20px;
+}
+
 .layout-block {
-    background-color: white;
+    position: absolute;
+}
+
+.layout-block--row-0 {
+    background-color: #FFFFFF;
+}
+
+.layout-block--row-1 {
+    background-color: #DDDDDD;
+}
+
+.layout-block--row-2 {
+    background-color: #BBBBBB;
 }
 
 .player-block {
     background-color: darkblue;
     height: 15px;
     width: 75px;
+    position: absolute;
+    bottom: 1rem;
 }
