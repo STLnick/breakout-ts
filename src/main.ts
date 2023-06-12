@@ -19,6 +19,7 @@ const CONTAINER_WIDTH = 750;
 const COLUMNS = 5;
 const ROWS = 3;
 const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
+const FPS = 1000 / 60; // 60 frames per second
 
 // Global variables
 let player: Player;
@@ -65,7 +66,6 @@ function setupGameBall(container: HTMLDivElement) {
 
     container.appendChild(ball.element);
 
-    // Send ball flying (should be a constant loop no stop (until out of bottom?)
     const interval = setInterval(() => {
         const leftVal = parseFloat(ball.element.style.left.split('px')[0]);
         const topVal = parseFloat(ball.element.style.top.split('px')[0]);
@@ -89,7 +89,7 @@ function setupGameBall(container: HTMLDivElement) {
         // Updating ball position values
         ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
         ball.element.style.top = `${topVal + (ball.rise * ball.velocity)}px`;
-    }, 50);
+    }, FPS);
 
     // Cleanup ball animation interval
     window.addEventListener('unload', () => {
