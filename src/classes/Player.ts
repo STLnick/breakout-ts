@@ -6,7 +6,7 @@ class Player {
     maxPosition: number;
     minPosition: number;
 
-    constructor(domEl: HTMLDivElement, leftPosition: number, minPosition: number, maxPosition: number) {
+    constructor(domEl: HTMLDivElement, leftPosition: number, maxPosition: number, minPosition = 0) {
         this.domEl = domEl;
         this.leftPosition = leftPosition;
         this.maxPosition = maxPosition;

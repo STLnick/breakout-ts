@@ -10,10 +10,10 @@ interface GameBall {
 }
 
 // Constants
+const BALL_DIAMETER = 20;
 const BLOCK_HEIGHT = 15;
 const BLOCK_WIDTH = 75;
 const BLOCK_PADDING = 16;
-const CONTAINER_PADDING = 16;
 const CONTAINER_HEIGHT = 500;
 const CONTAINER_WIDTH = 750;
 const COLUMNS = 5;
@@ -30,8 +30,8 @@ function layoutBlocks(container: HTMLDivElement) {
     let topStart: number;
 
     for (let i = 0; i < ROWS; i++) {
-        leftStart = CONTAINER_PADDING + (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
-        topStart = CONTAINER_PADDING + i * (BLOCK_HEIGHT + BLOCK_PADDING);
+        leftStart = (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
+        topStart = i * (BLOCK_HEIGHT + BLOCK_PADDING);
 
         for (let j = 0; j < COLUMNS; j++) {
             block = document.createElement('div');
@@ -98,7 +98,7 @@ function setupBall(container: HTMLDivElement) {
 }
 
 function setupPlayer(container: HTMLDivElement) {
-    const start = CONTAINER_PADDING + (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
+    const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
     const playerBlock = document.createElement('div');
 
     playerBlock.classList.add('player-block');
@@ -111,8 +111,7 @@ function setupPlayer(container: HTMLDivElement) {
     player = new Player(
         playerBlock,
         start,
-        CONTAINER_PADDING,
-        CONTAINER_WIDTH - BLOCK_WIDTH + CONTAINER_PADDING
+        CONTAINER_WIDTH - BLOCK_WIDTH,
     );
 
     // Add listeners for Player Movement
