@@ -1,8 +1,8 @@
 import './style.css';
 import Player from './classes/Player.ts';
-import { getRandomNumberBetween } from "./utils.ts";
+import {getRandomNumberBetween} from "./utils.ts";
 
-interface Ball {
+interface GameBall {
     element: HTMLDivElement;
     rise: number;
     run: number;
@@ -22,7 +22,7 @@ const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
 
 // Global variables
 let player: Player;
-let ball: Ball;
+let ball: GameBall;
 
 function layoutBlocks(container: HTMLDivElement) {
     let block: HTMLDivElement;
@@ -65,25 +65,30 @@ function setupBall(container: HTMLDivElement) {
 
     container.appendChild(ball.element);
 
-    const ballObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            console.log({ entry })
-            if (entry.isIntersecting) {
-                console.log('INTERSECTING');
-            }
-        })
-    });
-    ballObserver.observe(ball.element);
-
-
-
     // Send ball flying (should be a constant loop no stop (until out of bottom?)
     const interval = setInterval(() => {
         const leftVal = parseFloat(ball.element.style.left.split('px')[0]);
         const topVal = parseFloat(ball.element.style.top.split('px')[0]);
 
+        // IF moving would collide with top/bottom
+        if (
+            topVal + (ball.rise * ball.velocity) < 0
+            || topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER
+        ) {
+            ball.rise = -ball.rise;
+        }
+
+        // IF moving would collide with left/right
+        if (
+            leftVal + (ball.run * ball.velocity) < 0
+            || leftVal + (ball.run * ball.velocity) > CONTAINER_WIDTH - BALL_DIAMETER
+        ) {
+            ball.run = -ball.run;
+        }
+
+        // Updating ball position values
         ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
-        ball.element.style.top = `${topVal + (-ball.rise * ball.velocity)}px`;
+        ball.element.style.top = `${topVal + (ball.rise * ball.velocity)}px`;
     }, 50);
 
     // Cleanup ball animation interval
@@ -137,7 +142,7 @@ function layoutGame(attempts = 0) {
 
     setupPlayer(container);
     layoutBlocks(container);
-    setupBall(container);
+    setupGameBall(container);
 }
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
