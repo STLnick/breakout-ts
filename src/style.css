@@ -1,3 +1,10 @@
+:root {
+    --block-height: 15px;
+    --block-width: 75px;
+    --container-height: 500px;
+    --container-width: 750px;
+}
+
 body {
     background-color: #121212;
 }
@@ -20,7 +27,7 @@ body {
     border: #232323;
     border-radius: 5px;
     height: 500px;
-    width: 750px;
+    width: var(--container-width);
 }
 
 .breakout-ball {
@@ -50,8 +57,7 @@ body {
 
 .player-block {
     background-color: darkblue;
-    height: 15px;
-    width: 75px;
+    height: var(--block-height);
+    width: var(--block-width);
     position: absolute;
-    bottom: 1rem;
 }

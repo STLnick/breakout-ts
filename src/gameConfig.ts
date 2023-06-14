@@ -1,0 +1,17 @@
+const BLOCK_WIDTH = 75;
+const BLOCK_PADDING = 16;
+const COLUMNS = 5;
+
+export default {
+    BALL_DIAMETER: 20,
+    BLOCK_HEIGHT: 15,
+    BLOCK_PADDING,
+    BLOCK_WIDTH,
+    COLUMNS,
+    CONTAINER_HEIGHT: 500,
+    CONTAINER_WIDTH: 750,
+    FPS: 1000 / 60,
+    LAYOUT_WIDTH: (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1)),
+    MOVE_DISTANCE: 5,
+    ROWS: 3, // 60 frames per second
+}

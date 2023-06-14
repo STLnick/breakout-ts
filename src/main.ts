@@ -1,6 +1,9 @@
 import './style.css';
+
+import config from './gameConfig.ts';
 import Player from './classes/Player.ts';
 import {getRandomNumberBetween} from "./utils.ts";
+
 
 interface GameBall {
     element: HTMLDivElement;
@@ -9,45 +12,44 @@ interface GameBall {
     velocity: number;
 }
 
-// Constants
-const BALL_DIAMETER = 20;
-const BLOCK_HEIGHT = 15;
-const BLOCK_WIDTH = 75;
-const BLOCK_PADDING = 16;
-const CONTAINER_HEIGHT = 500;
-const CONTAINER_WIDTH = 750;
-const COLUMNS = 5;
-const ROWS = 3;
-const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
-const FPS = 1000 / 60; // 60 frames per second
+interface GameBlock {
+    x: number[],
+    y: number[],
+}
 
 // Global variables
 let player: Player;
 let ball: GameBall;
+let blocks: GameBlock[] = new Array(config.ROWS * config.COLUMNS);
 
 function layoutBlocks(container: HTMLDivElement) {
     let block: HTMLDivElement;
     let leftStart: number;
     let topStart: number;
 
-    for (let i = 0; i < ROWS; i++) {
-        leftStart = (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
-        topStart = i * (BLOCK_HEIGHT + BLOCK_PADDING);
+    for (let i = 0; i < config.ROWS; i++) {
+        leftStart = (config.CONTAINER_WIDTH / 2) - (config.LAYOUT_WIDTH / 2);
+        topStart = i * (config.BLOCK_HEIGHT + config.BLOCK_PADDING);
 
-        for (let j = 0; j < COLUMNS; j++) {
+        for (let j = 0; j < config.COLUMNS; j++) {
             block = document.createElement('div');
 
             block.classList.add('layout-block');
             block.classList.add(`layout-block--row-${i}`);
             block.classList.add(`layout-block--row-${i}--col-${j}`);
-            block.style.height = `${BLOCK_HEIGHT}px`;
-            block.style.width = `${BLOCK_WIDTH}px`;
+            block.style.height = `${config.BLOCK_HEIGHT}px`;
+            block.style.width = `${config.BLOCK_WIDTH}px`;
             block.style.left = `${leftStart}px`;
             block.style.top = `${topStart}px`;
 
             container.appendChild(block);
 
-            leftStart += BLOCK_PADDING + BLOCK_WIDTH;
+            blocks.push({
+               x: [leftStart, leftStart + config.BLOCK_WIDTH],
+               y: [topStart, topStart + config.BLOCK_HEIGHT],
+            });
+
+            leftStart += config.BLOCK_PADDING + config.BLOCK_WIDTH;
         }
     }
 }
@@ -57,12 +59,12 @@ function setupGameBall(container: HTMLDivElement) {
         element: document.createElement('div'),
         rise: getRandomNumberBetween(-1, 1),
         run: getRandomNumberBetween(-1, 1),
-        velocity: getRandomNumberBetween(6, 10),
+        velocity: getRandomNumberBetween(4, 8),
     };
 
     ball.element.classList.add('breakout-ball');
-    ball.element.style.left = `${CONTAINER_WIDTH / 2}px`;
-    ball.element.style.top = `${CONTAINER_HEIGHT / 2}px`;
+    ball.element.style.left = `${config.CONTAINER_WIDTH / 2}px`;
+    ball.element.style.top = `${config.CONTAINER_HEIGHT / 2}px`;
 
     container.appendChild(ball.element);
 
@@ -73,7 +75,7 @@ function setupGameBall(container: HTMLDivElement) {
         // IF moving would collide with top/bottom
         if (
             topVal + (ball.rise * ball.velocity) < 0
-            || topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER
+            || topVal + (ball.rise * ball.velocity) > config.CONTAINER_HEIGHT - config.BALL_DIAMETER
         ) {
             ball.rise = -ball.rise;
         }
@@ -81,7 +83,7 @@ function setupGameBall(container: HTMLDivElement) {
         // IF moving would collide with left/right
         if (
             leftVal + (ball.run * ball.velocity) < 0
-            || leftVal + (ball.run * ball.velocity) > CONTAINER_WIDTH - BALL_DIAMETER
+            || leftVal + (ball.run * ball.velocity) > config.CONTAINER_WIDTH - config.BALL_DIAMETER
         ) {
             ball.run = -ball.run;
         }
@@ -89,7 +91,7 @@ function setupGameBall(container: HTMLDivElement) {
         // Updating ball position values
         ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
         ball.element.style.top = `${topVal + (ball.rise * ball.velocity)}px`;
-    }, FPS);
+    }, config.FPS);
 
     // Cleanup ball animation interval
     window.addEventListener('unload', () => {
@@ -98,20 +100,23 @@ function setupGameBall(container: HTMLDivElement) {
 }
 
 function setupPlayer(container: HTMLDivElement) {
-    const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
+    const left = (config.CONTAINER_WIDTH / 2) - (config.BLOCK_WIDTH / 2);
+    const top = config.CONTAINER_HEIGHT - config.BLOCK_HEIGHT - 16;
     const playerBlock = document.createElement('div');
 
     playerBlock.classList.add('player-block');
-    playerBlock.style.height = `${BLOCK_HEIGHT}px`;
-    playerBlock.style.width = `${BLOCK_WIDTH}px`;
-    playerBlock.style.left = `${start}px`;
+    playerBlock.style.height = `${config.BLOCK_HEIGHT}px`;
+    playerBlock.style.width = `${config.BLOCK_WIDTH}px`;
+    playerBlock.style.left = `${left}px`;
+    playerBlock.style.top = `${top}px`;
 
     container.appendChild(playerBlock);
 
     player = new Player(
         playerBlock,
-        start,
-        CONTAINER_WIDTH - BLOCK_WIDTH,
+        left,
+        top,
+        config.CONTAINER_WIDTH - config.BLOCK_WIDTH,
     );
 
     // Add listeners for Player Movement
