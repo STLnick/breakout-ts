@@ -36,6 +36,21 @@ class Player {
             this.domEl.style.left = `${this.leftPosition}px`;
         });
     }
+
+    moveTo(x: number) {
+        console.log('Player#moveTo() :: x', x);
+        if (x < this.minPosition) {
+            this.leftPosition = this.minPosition;
+        } else if (x > this.maxPosition) {
+            this.leftPosition = this.maxPosition;
+        } else {
+            this.leftPosition = x;
+        }
+        
+        window.requestAnimationFrame(() => {
+            this.domEl.style.left = `${this.leftPosition}px`;
+        });
+    }
 }
 
 export default Player;

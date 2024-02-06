@@ -1,6 +1,6 @@
 import './style.css';
 import Player from './classes/Player.ts';
-import {getRandomNumberBetween} from "./utils.ts";
+import { getRandomNumberBetween } from './utils.ts';
 
 interface GameBall {
     element: HTMLDivElement;
@@ -37,9 +37,11 @@ function layoutBlocks(container: HTMLDivElement) {
         for (let j = 0; j < COLUMNS; j++) {
             block = document.createElement('div');
 
-            block.classList.add('layout-block');
-            block.classList.add(`layout-block--row-${i}`);
-            block.classList.add(`layout-block--row-${i}--col-${j}`);
+            block.classList.add(
+                'layout-block',
+                `layout-block--row-${i}`,
+                `layout-block--row-${i}--col-${j}`,
+            );
             block.style.height = `${BLOCK_HEIGHT}px`;
             block.style.width = `${BLOCK_WIDTH}px`;
             block.style.left = `${leftStart}px`;
@@ -114,16 +116,12 @@ function setupPlayer(container: HTMLDivElement) {
         CONTAINER_WIDTH - BLOCK_WIDTH,
     );
 
-    // Add listeners for Player Movement
-    window.addEventListener('keydown', function (evt) {
-        if (evt.key === 'ArrowLeft') {
-            player.move('LEFT');
-        } else if (evt.key === 'ArrowRight') {
-            player.move('RIGHT');
-        }
+    window.addEventListener('mousemove', function(evt) {
+        player.moveTo(evt.clientX - containerLeft);
     });
 }
 
+var containerLeft = 0;
 function layoutGame(attempts = 0) {
     const container = document.querySelector<HTMLDivElement>('.game-container');
 
@@ -133,12 +131,11 @@ function layoutGame(attempts = 0) {
             throw new Error('Error finding Game Container - unable to layout game');
         }
         // Try to layout again in 75ms
-        setTimeout(() => {
-            layoutGame(attempts + 1)
-        }, 75);
+        setTimeout(() => layoutGame(attempts + 1), 75);
         return;
     }
-
+    
+    containerLeft = container.getBoundingClientRect().left;
     setupPlayer(container);
     layoutBlocks(container);
     setupGameBall(container);
