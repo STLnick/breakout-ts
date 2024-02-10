@@ -38,7 +38,7 @@ class Player {
     }
 
     moveTo(x: number) {
-        console.log('Player#moveTo() :: x', x);
+        //console.log('Player#moveTo() :: x', x);
         if (x < this.minPosition) {
             this.leftPosition = this.minPosition;
         } else if (x > this.maxPosition) {

@@ -54,12 +54,45 @@ function layoutBlocks(container: HTMLDivElement) {
     }
 }
 
+function checkXInPlayerRange(leftVal: number, rightVal: number) {
+    const xInPlayerRange = (rightVal >= player.leftPosition && rightVal <= player.leftPosition + BLOCK_WIDTH)
+        || (leftVal >= player.leftPosition && leftVal <= player.leftPosition + BLOCK_WIDTH);
+
+    return xInPlayerRange;
+}
+
+function checkYInPlayerRange(topVal: number, bottomVal: number) {
+    const playerTop = parseFloat(getComputedStyle(player.domEl).top);
+    const playerBottom = playerTop + BLOCK_HEIGHT;
+    
+    // bottom is in player Y range
+    if (bottomVal >= playerTop && bottomVal <= playerBottom) {
+        return true;
+    }
+    // top is in player Y range
+    if (topVal >= playerTop && topVal <= playerBottom) {
+        return true;
+    }
+    // top is above player.top && bottom is below player.bottom
+
+    const yInPlayerRange = (bottomVal >= playerBottom + BALL_DIAMETER && bottomVal <= playerBottom)
+        || (topVal >= playerBottom + BALL_DIAMETER && topVal <= playerBottom);
+
+    return yInPlayerRange;
+}
+
 function setupGameBall(container: HTMLDivElement) {
     ball = {
         element: document.createElement('div'),
-        rise: getRandomNumberBetween(-1, 1),
+        
+        //rise: getRandomNumberBetween(-1, 1),
+        rise: 1,
+        
         run: getRandomNumberBetween(-1, 1),
+        //run: 0,
+        
         velocity: getRandomNumberBetween(6, 10),
+        //velocity: 0,
     };
 
     ball.element.classList.add('breakout-ball');
@@ -70,14 +103,16 @@ function setupGameBall(container: HTMLDivElement) {
 
     const interval = setInterval(() => {
         const leftVal = parseFloat(ball.element.style.left.split('px')[0]);
+        const rightVal = leftVal + BALL_DIAMETER;
         const topVal = parseFloat(ball.element.style.top.split('px')[0]);
+        const bottomVal = topVal + BALL_DIAMETER;
 
         // IF moving would collide with top/bottom
         if (
             topVal + (ball.rise * ball.velocity) < 0
             || topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER
         ) {
-            ball.rise = -ball.rise;
+            ball.rise *= -1;
         }
 
         // IF moving would collide with left/right
@@ -85,8 +120,16 @@ function setupGameBall(container: HTMLDivElement) {
             leftVal + (ball.run * ball.velocity) < 0
             || leftVal + (ball.run * ball.velocity) > CONTAINER_WIDTH - BALL_DIAMETER
         ) {
-            ball.run = -ball.run;
+            ball.run *= -1;
         }
+
+        // Player collision check
+        if (checkXInPlayerRange(leftVal, rightVal) && checkYInPlayerRange(topVal, bottomVal)) {
+            ball.rise *= -1;
+        }
+        
+        // Block collision check
+        // TODO
 
         // Updating ball position values
         ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
@@ -115,6 +158,7 @@ function setupPlayer(container: HTMLDivElement) {
         start,
         CONTAINER_WIDTH - BLOCK_WIDTH,
     );
+    window.player = player;
 
     window.addEventListener('mousemove', function(evt) {
         player.moveTo(evt.clientX - containerLeft);
