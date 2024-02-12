@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap');
+
+:root {
+    --primary: #90C2E7; /* light sky blue */
+    --secondary: #4A6670; /* payne's gray */ 
+    --tertiary: #A0AF84; /* olivine */
+    --accent: #D6A2AD; /* puce */
+    --dark: #170A1C; /* dark purple */
+}
+
+body {
+    background-color: var(--dark);
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+}
+
+a {
+    color: var(--accent);
+}
+a:hover {
+    filter: brightness(85%);
+}
+
+/** Utility Classes */
+.font-thin {
+    font-weight: 200;
+}
+.font-normal {
+    font-weight: 400;
+}
+.font-bold {
+    font-weight: 600;
+}
+.font-14 {
+    font-size: 14px;
+}
+.font-16 {
+    font-size: 16px;
+}
+.font-20 {
+    font-size: 20px;
+}
+.font-24 {
+    font-size: 24px;
+}
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+.uppercase {
+    text-transform: uppercase;
+}
+
+/** Flex **/
+.flex {
+    display: flex;
+}
+.flex-col {
+    flex-direction: column;
+}
+.align-center {
+    align-items: center;
+}
+.justify-center {
+    justify-items: center;
+}
+
+/** Colors **/
+.primary {
+    background-color: var(--primary);
+}
+.primary-text {
+    color: var(--primary);
+}
+.secondary {
+    background-color: var(--secondary);
+}
+.secondary-text {
+    color: var(--secondary);
+}
+.tertiary {
+    background-color: var(--tertiary);
+}
+.tertiary-text {
+    color: var(--tertiary);
+}
+.accent {
+    background-color: var(--accent);
+}
+.accent-text {
+    color: var(--accent);
+}
+.dark {
+    background-color: var(--dark);
+}
+.dark-text {
+    color: var(--dark);
+}
+
+#game-title {
+    color: #DDDDDD;
+    font-size: 56px;
+    text-transform: uppercase;
+    text-shadow: rgba(200, 200, 200, 0.6) 6px 0 4px;
+}
+
+#game-rules {
+    background-color: rgba(200, 200, 200, 0.1);
+    border-radius: 4px;
+    margin-bottom: 2em;
+    padding: 16px 24px;
+}
+
+.btn {
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 8px 12px;
+}
+.btn:hover {
+    filter: brightness(85%);
+}
+
+.start-btn {
+    color: #333333;
+    text-transform: uppercase;
+}
+
+.game-container {
+    position: relative;
+    background-color: #666666;
+    border: #232323;
+    border-radius: 5px;
+    height: 500px;
+    width: 750px;
+}
+
+.breakout-ball {
+    position: absolute;
+    background-color: rgba(255, 0, 0, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    height: 20px;
+    width: 20px;
+}
+
+.layout-block {
+    position: absolute;
+}
+
+.layout-block--row-0 {
+    background-color: #FFFFFF;
+}
+
+.layout-block--row-1 {
+    background-color: #DDDDDD;
+}
+
+.layout-block--row-2 {
+    background-color: #BBBBBB;
+}
+
+.player-block {
+    background-color: darkblue;
+    height: 15px;
+    width: 75px;
+    position: absolute;
+    bottom: 16px;
+}
