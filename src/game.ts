@@ -1,32 +1,5 @@
-import Player from './classes/Player.ts';
-import { getRandomNumberBetween } from './utils.ts';
-
-// Initialize HTML
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-    <h1 id="game-title">Breakout Game</h1>
-    <div class="game-container">
-        <!-- Starting Blocks -->
-        <!-- (Space) -->
-        <!-- Player -->
-    </div>
-`;
-
-
-type GameState = 'menu' | 'in_progress' | 'lost' | 'won';
-const GAME_STATES = Object.freeze({
-    menu: <GameState>'menu',
-    in_progress: <GameState>'in_progress',
-    lost: <GameState>'lost',
-    won: <GameState>'won',
-    quit: <GameState>'quit',
-});
-
-interface GameBall {
-    element: HTMLDivElement;
-    rise: number;
-    run: number;
-    velocity: number;
-}
+import Player from "./classes/Player.ts";
+import { getRandomNumberBetween } from "./utils.ts";
 
 // Constants
 const BALL_DIAMETER = 20;
@@ -39,6 +12,23 @@ const COLUMNS = 5;
 const ROWS = 3;
 const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
 const FPS = 1000 / 60; // 60 frames per second
+
+
+type GameState = "menu" | "in_progress" | "lost" | "won";
+const GAME_STATES = Object.freeze({
+    menu: <GameState>"menu",
+    in_progress: <GameState>"in_progress",
+    lost: <GameState>"lost",
+    won: <GameState>"won",
+    quit: <GameState>"quit",
+});
+
+interface GameBall {
+    element: HTMLDivElement;
+    rise: number;
+    run: number;
+    velocity: number;
+}
 
 // Global variables
 let player: Player;
@@ -55,8 +45,40 @@ let state = {
     setValue(val: GameState) {
         this.updated = true;
         this.value = val;
+        stateDisplay.innerHTML = val;
     },
 };
+
+// Initialize HTML
+document.getElementById("app")!.innerHTML = `
+    <h1 id="game-title" class="font-normal">Breakout</h1>
+    <div class="game-container">
+        <!-- Starting Blocks -->
+        <!-- (Space) -->
+        <!-- Player -->
+    </div>
+    <div>
+        <button id="start-game-btn" class="btn">Start Game</button>
+        <button id="stop-game-btn" class="btn">Stop Game</button>
+    </div>
+    <div>
+        <code id="state-display">${state.value}</code>
+    </div>
+`;
+
+const stateDisplay = document.getElementById("state-display")!;
+document.getElementById("start-game-btn")!.addEventListener("click", () => {
+    if (state.value !== GAME_STATES.in_progress) {
+        runGame();
+    }
+});
+document.getElementById("stop-game-btn")!.addEventListener("click", () => {
+    if (state.value === GAME_STATES.in_progress) {
+        stopGame();
+        goToMenu();
+    }
+});
+
 
 function layoutBlocks(container: HTMLDivElement) {
     let blocks: HTMLDivElement[] = Array(ROWS * COLUMNS);
@@ -70,8 +92,8 @@ function layoutBlocks(container: HTMLDivElement) {
         topStart = i * (BLOCK_HEIGHT + BLOCK_PADDING);
 
         for (let j = 0; j < COLUMNS; j++) {
-            block = document.createElement('div');
-            block.classList.add('layout-block', `layout-block--row-${i}`);
+            block = document.createElement("div");
+            block.classList.add("layout-block", `layout-block--row-${i}`);
             block.id = `layout-block--row-${i}--col-${j}`;
             block.style.height = `${BLOCK_HEIGHT}px`;
             block.style.width = `${BLOCK_WIDTH}px`;
@@ -124,8 +146,8 @@ function checkBlockCollision(top: number, right: number, left: number): HTMLDivE
         return null;
     }
 
-    // IF we get here then we're generally within the X coords of some blocks
-    // and our Y is AT OR ABOVE the lowest Y so it's possible we can collide but not guaranteed yet
+    // IF we get here then we"re generally within the X coords of some blocks
+    // and our Y is AT OR ABOVE the lowest Y so it"s possible we can collide but not guaranteed yet
 
     let blockStyle: CSSStyleDeclaration;
     let block: HTMLDivElement | null;
@@ -191,7 +213,7 @@ function updateBlockData() {
 
 function setupGameBall(container: HTMLDivElement) {
     ball = {
-        element: document.createElement('div'),
+        element: document.createElement("div"),
         rise: getRandomNumberBetween(-1, 1),
         //rise: 1,
         run: getRandomNumberBetween(-1, 1),
@@ -200,7 +222,7 @@ function setupGameBall(container: HTMLDivElement) {
         //velocity: 0,
     };
 
-    ball.element.classList.add('breakout-ball');
+    ball.element.classList.add("breakout-ball");
     ball.element.style.left = `${CONTAINER_WIDTH / 2}px`;
     ball.element.style.top = `${CONTAINER_HEIGHT / 2}px`;
 
@@ -208,9 +230,9 @@ function setupGameBall(container: HTMLDivElement) {
 }
 
 function gameTick() {
-    const leftVal = parseFloat(ball.element.style.left.split('px')[0]);
+    const leftVal = parseFloat(ball.element.style.left.split("px")[0]);
     const rightVal = leftVal + BALL_DIAMETER;
-    const topVal = parseFloat(ball.element.style.top.split('px')[0]);
+    const topVal = parseFloat(ball.element.style.top.split("px")[0]);
     const bottomVal = topVal + BALL_DIAMETER;
 
     // IF moving would collide with top/bottom
@@ -249,9 +271,9 @@ function gameTick() {
 
 function setupPlayer(container: HTMLDivElement) {
     const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
-    const playerBlock = document.createElement('div');
+    const playerBlock = document.createElement("div");
 
-    playerBlock.classList.add('player-block');
+    playerBlock.classList.add("player-block");
     playerBlock.style.height = `${BLOCK_HEIGHT}px`;
     playerBlock.style.width = `${BLOCK_WIDTH}px`;
     playerBlock.style.left = `${start}px`;
@@ -265,18 +287,18 @@ function setupPlayer(container: HTMLDivElement) {
     );
 
     const containerLeft = container.getBoundingClientRect().left;
-    window.addEventListener('mousemove', function(evt) {
+    window.addEventListener("mousemove", function(evt) {
         player.moveTo(evt.clientX - containerLeft);
     });
 }
 
 function layoutGame(attempts = 0) {
-    const container = document.querySelector<HTMLDivElement>('.game-container');
+    const container = document.querySelector<HTMLDivElement>(".game-container");
 
     if (container === null) {
         if (attempts > 3) {
             console.error(`Container: ${container}, Attempts: ${attempts}`);
-            throw new Error('Error finding Game Container - unable to layout game');
+            throw new Error("Error finding Game Container - unable to layout game");
         }
         // Try to layout again in 75ms
         setTimeout(() => layoutGame(attempts + 1), 75);
@@ -289,61 +311,33 @@ function layoutGame(attempts = 0) {
 }
 
 function goToMenu() {
-    const route = document.URL;
-    console.log({ route });
+    window.location.assign("/menu");
 }
 
-function runGame() {
-    console.log('runGame() :: START');
-    
-    let interval: NodeJS.Timeout | undefined;
+function stopGame() {
+    state.setValue(GAME_STATES.menu);
+    goToMenu();
+}
 
-    window.addEventListener('unload', () => {
-        clearInterval(interval);
-    });
-    window.addEventListener('keypress', evt => {
-        if (evt.shiftKey && evt.key === 'q') {
-            clearInterval(interval);
+function resetInterval() {
+    clearInterval(gameInterval);
+    gameInterval = undefined;
+}
+
+var gameInterval: number | undefined;
+
+function runGame() {
+    window.addEventListener("unload", resetInterval);
+    window.addEventListener("keypress", evt => {
+        if (evt.shiftKey && evt.key === "q") {
+            if (gameInterval) resetInterval();
             state.setValue(GAME_STATES.quit);
         }
     });
     
-    console.log('runGame() :: setup unload listener');
-
-    while (state.value !== GAME_STATES.quit) {
-        console.log('runGame() :: while() :: START');
-
-        if (state.updated) {
-            state.updated = false;
-            clearInterval(interval);
-
-            switch (state.value) {
-                case GAME_STATES.menu:
-                    goToMenu();
-                    break;
-                case GAME_STATES.in_progress:
-                    layoutGame();
-
-                    interval = setInterval(() => {
-                        gameTick();
-                    }, FPS);
-
-                    break;
-                case GAME_STATES.lost:
-                    break;
-                case GAME_STATES.won:
-                    break;
-                default:
-                    // do nothing so outer loop captures and ends
-                    break;
-            }
-
-        }
-    }
-   
-    clearInterval(interval);
-    
-    console.log('quit game state detected - ending main()');
+    // Start the game
+    state.setValue(GAME_STATES.in_progress);
+    layoutGame();
+    gameInterval = setInterval(gameTick, FPS);
 }
 
-//runGame();
