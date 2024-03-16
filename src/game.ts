@@ -1,44 +1,20 @@
 import Player from "./classes/Player.ts";
-import { getRandomNumberBetween } from "./utils.ts";
-
-// Constants
-const BALL_DIAMETER = 20;
-const BLOCK_HEIGHT = 15;
-const BLOCK_WIDTH = 75;
-const BLOCK_PADDING = 16;
-const CONTAINER_HEIGHT = 500;
-const CONTAINER_WIDTH = 750;
-const COLUMNS = 5;
-const ROWS = 3;
-const LAYOUT_WIDTH = (BLOCK_WIDTH * COLUMNS) + (BLOCK_PADDING * (COLUMNS - 1));
-const FPS = 1000 / 60; // 60 frames per second
-
-
-type GameState = "menu" | "in_progress" | "lost" | "won";
-const GAME_STATES = Object.freeze({
-    menu: <GameState>"menu",
-    in_progress: <GameState>"in_progress",
-    lost: <GameState>"lost",
-    won: <GameState>"won",
-    quit: <GameState>"quit",
-});
-
-interface GameBall {
-    element: HTMLDivElement;
-    rise: number;
-    run: number;
-    velocity: number;
-}
+import { fragments, layoutGame } from "./layout.ts";
+import {
+    BALL_DIAMETER,
+    BLOCK_HEIGHT,
+    BLOCK_WIDTH,
+    CONTAINER_HEIGHT,
+    CONTAINER_WIDTH,
+    FPS,
+} from "./constants.ts";
+import { BlockData, GameState, GAME_STATES, GameBall } from "./types.ts";
 
 // Global variables
+let stateDisplay: HTMLElement;
 let player: Player;
 let ball: GameBall;
-let blockData: {
-    blocks: (HTMLDivElement|null)[],
-    leftMostX: number,
-    rightMostX: number,
-    lowestY: number,
-};
+let blockData: BlockData
 let state = {
     value: GAME_STATES.menu,
     updated: true,
@@ -50,70 +26,12 @@ let state = {
 };
 
 // Initialize HTML
-document.getElementById("app")!.innerHTML = `
-    <h1 id="game-title" class="font-normal">Breakout</h1>
-    <div class="game-container">
-        <!-- Starting Blocks -->
-        <!-- (Space) -->
-        <!-- Player -->
-    </div>
-    <div>
-        <button id="start-game-btn" class="btn">Start Game</button>
-        <button id="stop-game-btn" class="btn">Stop Game</button>
-    </div>
-    <div>
-        <code id="state-display">${state.value}</code>
-    </div>
-`;
-
-const stateDisplay = document.getElementById("state-display")!;
+document.getElementById("app")!.innerHTML = fragments.base;
 document.getElementById("start-game-btn")!.addEventListener("click", () => {
     if (state.value !== GAME_STATES.in_progress) {
         runGame();
     }
 });
-document.getElementById("stop-game-btn")!.addEventListener("click", () => {
-    if (state.value === GAME_STATES.in_progress) {
-        stopGame();
-        goToMenu();
-    }
-});
-
-
-function layoutBlocks(container: HTMLDivElement) {
-    let blocks: HTMLDivElement[] = Array(ROWS * COLUMNS);
-    let block: HTMLDivElement;
-    let initialLeft: number = (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
-    let leftStart: number;
-    let topStart: number;
-
-    for (let i = 0; i < ROWS; i++) {
-        leftStart = initialLeft;
-        topStart = i * (BLOCK_HEIGHT + BLOCK_PADDING);
-
-        for (let j = 0; j < COLUMNS; j++) {
-            block = document.createElement("div");
-            block.classList.add("layout-block", `layout-block--row-${i}`);
-            block.id = `layout-block--row-${i}--col-${j}`;
-            block.style.height = `${BLOCK_HEIGHT}px`;
-            block.style.width = `${BLOCK_WIDTH}px`;
-            block.style.left = `${leftStart}px`;
-            block.style.top = `${topStart}px`;
-
-            container.appendChild(block);
-            blocks[j + (i * COLUMNS)] = block;
-
-            leftStart += BLOCK_PADDING + BLOCK_WIDTH;
-        }
-    }
-
-    blockData = {
-        blocks,
-        leftMostX: initialLeft,
-        rightMostX: initialLeft + (COLUMNS * (BLOCK_PADDING + BLOCK_WIDTH)),
-        lowestY: ROWS * (BLOCK_HEIGHT + BLOCK_PADDING),
-    };
-}
 
 function checkXInPlayerRange(leftVal: number, rightVal: number): boolean {
     const xInPlayerRange = (rightVal >= player.leftPosition && rightVal <= player.leftPosition + BLOCK_WIDTH)
@@ -211,24 +129,6 @@ function updateBlockData() {
     blockData.lowestY = lowestY;
 }
 
-function setupGameBall(container: HTMLDivElement) {
-    ball = {
-        element: document.createElement("div"),
-        rise: getRandomNumberBetween(-1, 1),
-        //rise: 1,
-        run: getRandomNumberBetween(-1, 1),
-        //run: 0,
-        velocity: getRandomNumberBetween(6, 10),
-        //velocity: 0,
-    };
-
-    ball.element.classList.add("breakout-ball");
-    ball.element.style.left = `${CONTAINER_WIDTH / 2}px`;
-    ball.element.style.top = `${CONTAINER_HEIGHT / 2}px`;
-
-    container.appendChild(ball.element);
-}
-
 function gameTick() {
     const leftVal = parseFloat(ball.element.style.left.split("px")[0]);
     const rightVal = leftVal + BALL_DIAMETER;
@@ -240,7 +140,11 @@ function gameTick() {
         ball.rise *= -1;
     } else if (topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER) {
         // TODO: lose a life / lose the game
-        ball.rise *= -1;
+        state.setValue(GAME_STATES.lost);
+        resetInterval();
+        const container = document.querySelector<HTMLDivElement>(".game-container")!;
+        container.innerHTML = fragments.lost;
+        return;
     }
 
     // IF moving would collide with left/right
@@ -269,62 +173,16 @@ function gameTick() {
     ball.element.style.top = `${topVal + (ball.rise * ball.velocity)}px`;
 }
 
-function setupPlayer(container: HTMLDivElement) {
-    const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
-    const playerBlock = document.createElement("div");
-
-    playerBlock.classList.add("player-block");
-    playerBlock.style.height = `${BLOCK_HEIGHT}px`;
-    playerBlock.style.width = `${BLOCK_WIDTH}px`;
-    playerBlock.style.left = `${start}px`;
-
-    container.appendChild(playerBlock);
-
-    player = new Player(
-        playerBlock,
-        start,
-        CONTAINER_WIDTH - BLOCK_WIDTH,
-    );
-
-    const containerLeft = container.getBoundingClientRect().left;
-    window.addEventListener("mousemove", function(evt) {
-        player.moveTo(evt.clientX - containerLeft);
-    });
-}
-
-function layoutGame(attempts = 0) {
-    const container = document.querySelector<HTMLDivElement>(".game-container");
-
-    if (container === null) {
-        if (attempts > 3) {
-            console.error(`Container: ${container}, Attempts: ${attempts}`);
-            throw new Error("Error finding Game Container - unable to layout game");
-        }
-        // Try to layout again in 75ms
-        setTimeout(() => layoutGame(attempts + 1), 75);
-        return;
-    }
-    
-    setupPlayer(container);
-    layoutBlocks(container);
-    setupGameBall(container);
-}
-
 function goToMenu() {
     window.location.assign("/menu");
 }
 
-function stopGame() {
-    state.setValue(GAME_STATES.menu);
-    goToMenu();
-}
+var gameInterval: number | undefined;
 
 function resetInterval() {
     clearInterval(gameInterval);
     gameInterval = undefined;
 }
-
-var gameInterval: number | undefined;
 
 function runGame() {
     window.addEventListener("unload", resetInterval);
@@ -335,9 +193,14 @@ function runGame() {
         }
     });
     
+    const newGame = layoutGame();
+    ball = newGame.ball;
+    blockData = newGame.blockData;
+    player = newGame.player;
+
     // Start the game
+    stateDisplay = document.getElementById("state-display")!;
     state.setValue(GAME_STATES.in_progress);
-    layoutGame();
-    gameInterval = setInterval(gameTick, FPS);
+    gameInterval = window.setInterval(gameTick, FPS);
 }
 
