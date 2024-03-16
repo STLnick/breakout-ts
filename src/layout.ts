@@ -31,6 +31,7 @@ export const fragments = {
         </div>
     `,
     lost: `<h3>LOST</h3>`,
+    won: `<h3>WON</h3>`,
 };
 
 function layoutBlocks(container: HTMLDivElement) {

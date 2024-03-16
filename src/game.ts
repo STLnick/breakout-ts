@@ -56,35 +56,45 @@ function checkYInPlayerRange(topVal: number, bottomVal: number): boolean {
     return false;
 }
 
+/**
+ * Check for collision with a block. In event of collision detection we null out the
+ * block entry in our array and return the collidee.
+ *
+ * @returns {HTMLDivElement | null} The block that was collided with.
+ */
 function checkBlockCollision(top: number, right: number, left: number): HTMLDivElement | null {
-    if (top > blockData.lowestY) {
+    // First check if we're generally within the X and Y coords of
+    // some blocks to quickly determine if a collision is possible
+    if (
+        top > blockData.lowestY
+        || (right < blockData.leftMostX || left > blockData.rightMostX)
+    ) {
         return null;
     }
-    if (right < blockData.leftMostX || left > blockData.rightMostX) {
-        return null;
-    }
-
-    // IF we get here then we"re generally within the X coords of some blocks
-    // and our Y is AT OR ABOVE the lowest Y so it"s possible we can collide but not guaranteed yet
 
     let blockStyle: CSSStyleDeclaration;
     let block: HTMLDivElement | null;
     let blockLeft: number;
     let blockTop: number;
+    
+    // Check all blocks for potential collision
     for (let i = 0; i < blockData.blocks.length; i++) {
         block = blockData.blocks[i];
+        
         if (block === null) {
             continue;
         }
+        
         blockStyle = getComputedStyle(<Element>block);
         blockTop = parseFloat(blockStyle.top);
+        
         if (top >= blockTop && top <= blockTop + BLOCK_HEIGHT) {
             blockLeft = parseFloat(blockStyle.left);
+            
             if (
-                left >= blockLeft && left <= blockLeft + BLOCK_WIDTH
-                || right >= blockLeft && right <= blockLeft + BLOCK_WIDTH
+                (left >= blockLeft && left <= blockLeft + BLOCK_WIDTH)
+                || (right >= blockLeft && right <= blockLeft + BLOCK_WIDTH)
             ) {
-                console.log(`Collided with Block"${block.id}"`);
                 blockData.blocks[i] = null;
                 return block;
             }
@@ -94,7 +104,12 @@ function checkBlockCollision(top: number, right: number, left: number): HTMLDivE
     return null;
 }
 
-function updateBlockData() {
+/**
+ * Update block data for after a collision to update leftMostX, rightMostX, and lowestY values.
+ *
+ * @returns {boolean} If there are blocks remaining to collide with.
+ */
+function updateBlockData(): boolean {
     let leftMostX = 9999;
     let rightMostX = 0;
     let lowestY = 0;
@@ -102,6 +117,7 @@ function updateBlockData() {
     let blockStyle: CSSStyleDeclaration;
     let blockLeft: number;
     let blockTop: number;
+    let haveBlocks = false;
     
     for (let i = 0; i < blockData.blocks.length; i++) {
         block = blockData.blocks[i];
@@ -109,6 +125,7 @@ function updateBlockData() {
             continue;
         }
 
+        haveBlocks = true;
         blockStyle = getComputedStyle(<Element>block);
         blockTop = parseFloat(blockStyle.top);
         blockLeft = parseFloat(blockStyle.left);
@@ -127,6 +144,8 @@ function updateBlockData() {
     blockData.leftMostX = leftMostX;
     blockData.rightMostX = rightMostX;
     blockData.lowestY = lowestY;
+
+    return haveBlocks;
 }
 
 function gameTick() {
@@ -139,7 +158,6 @@ function gameTick() {
     if (topVal + (ball.rise * ball.velocity) < 0) {
         ball.rise *= -1;
     } else if (topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER) {
-        // TODO: lose a life / lose the game
         state.setValue(GAME_STATES.lost);
         resetInterval();
         const container = document.querySelector<HTMLDivElement>(".game-container")!;
@@ -165,17 +183,22 @@ function gameTick() {
     const collidee = checkBlockCollision(topVal, rightVal, leftVal);
     if (collidee !== null) {
         collidee.parentNode?.removeChild(collidee);
-        updateBlockData();
+        const haveBlocks = updateBlockData();
+
+        if (!haveBlocks) {
+            state.setValue(GAME_STATES.won);
+            resetInterval();
+            const container = document.querySelector<HTMLDivElement>(".game-container")!;
+            container.innerHTML = fragments.won;
+            return;
+        }
+
         ball.rise *= -1;
     }
 
     // Updating ball position values
     ball.element.style.left = `${leftVal + (ball.run * ball.velocity)}px`;
     ball.element.style.top = `${topVal + (ball.rise * ball.velocity)}px`;
-}
-
-function goToMenu() {
-    window.location.assign("/menu");
 }
 
 var gameInterval: number | undefined;
