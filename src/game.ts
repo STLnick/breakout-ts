@@ -158,6 +158,7 @@ function gameTick() {
     // Player collision check
     if (checkXInPlayerRange(leftVal, rightVal) && checkYInPlayerRange(topVal, bottomVal)) {
         ball.rise *= -1;
+        ball.velocity *= 1.05;
     }
 
     // Block collision check

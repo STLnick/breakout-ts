@@ -73,7 +73,7 @@ function setupGameBall(container: HTMLDivElement) {
         element: document.createElement("div"),
         rise: getRandomNumberBetween(-1, 1),
         run: getRandomNumberBetween(-1, 1),
-        velocity: getRandomNumberBetween(6, 10),
+        velocity: getRandomNumberBetween(7, 10),
     };
 
     ball.element.classList.add("breakout-ball");
