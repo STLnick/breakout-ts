@@ -4,5 +4,16 @@ export const getRandomNumberBetween = (min: number, max: number) => {
         throw new Error('`min` argument must be less than `max` argument');
     }
 
-    return min === max ? min : Math.random() * (max - min) + min;
+    if (min === max) {
+        return min;
+    }
+
+    const calc = () => Math.random() * (max - min) + min;
+
+    let val;
+    do {
+        val = calc();
+    } while (val === 0);
+
+    return val;
 }
