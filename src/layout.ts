@@ -12,26 +12,25 @@ import {
 import { BlockData, GameBall } from "./types.ts";
 import { getRandomNumberBetween } from "./utils.ts";
 
+
 export const fragments = {
     base: `
+        <a id="menu-link" class="font-20" href="/">Home</a>
+        
         <h1 id="game-title" class="font-normal">Breakout</h1>
-        <div class="game-container">
-            <!-- Starting Blocks -->
-            <!-- (Space) -->
-            <!-- Player -->
+        
+        <div class="game-container-wrapper">
+            <div class="game-container"></div>
+            
+            <h3 class="game-msg">Good luck!</h3>
+            
+            <div class="game-buttons flex flex-col align-center">
+                <button id="start-game-btn" class="btn primary dark-text">Start</button>
+            </div>
         </div>
-        <div>
-            <button id="start-game-btn" class="btn">Start Game</button>
-        </div>
-        <div>
-            <code id="state-display"></code>
-        </div>
-        <div>
-            <a id="menu-btn" class="btn" href="/menu">Menu</button>
-        </div>
+        
+        <div class="game-footer"></div>
     `,
-    lost: `<h3>LOST</h3>`,
-    won: `<h3>WON</h3>`,
 };
 
 function layoutBlocks(container: HTMLDivElement) {

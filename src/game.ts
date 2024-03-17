@@ -9,52 +9,65 @@ import {
     FPS,
 } from "./constants.ts";
 import { BlockData, GameState, GAME_STATES, GameBall } from "./types.ts";
+import { checkXInPlayerRange, checkYInPlayerRange } from "./utils.ts";
 
 // Global variables
-let stateDisplay: HTMLElement;
 let player: Player;
 let ball: GameBall;
-let blockData: BlockData
+let blockData: BlockData;
 let state = {
     value: GAME_STATES.menu,
     updated: true,
     setValue(val: GameState) {
         this.updated = true;
         this.value = val;
-        stateDisplay.innerHTML = val;
+    },
+    inProgress() {
+        return this.value === GAME_STATES.in_progress;
     },
 };
 
+function moveButtons(pos: string | undefined) {
+    const gameMsg = document.querySelector(".game-msg")!;
+    const buttonsDiv = document.querySelector(".game-buttons")!;
+    const footer = document.querySelector(".game-footer")!;
+    if (pos === "low") {
+        gameMsg.classList.add("hidden");
+        buttonsDiv.classList.add("low");
+        footer.classList.add("low");
+    } else {
+        gameMsg.classList.remove("hidden");
+        buttonsDiv.classList.remove("low");
+        footer.classList.remove("low");
+    }
+}
+
 // Initialize HTML
 document.getElementById("app")!.innerHTML = fragments.base;
-document.getElementById("start-game-btn")!.addEventListener("click", () => {
-    if (state.value !== GAME_STATES.in_progress) {
-        runGame();
+
+// Grab elements
+let container = document.querySelector<HTMLDivElement>(".game-container")!;
+const gameMsg = document.querySelector(".game-msg")!;
+const startBtn = document.getElementById("start-game-btn")!;
+
+document.getElementById("start-game-btn")!.addEventListener("click", function() {
+    resetInterval();
+    if (!state.inProgress()) {
+        this.textContent = "Restart";
     }
+
+    const buttonsDiv = document.querySelector(".game-buttons")!;
+    if (!buttonsDiv.classList.contains("low")) {
+        moveButtons("low");
+    }
+
+    if (!container) {
+        container = document.querySelector<HTMLDivElement>(".game-container")!;
+    }
+    container.innerHTML = "";
+
+    setTimeout(() => runGame(), 300);
 });
-
-function checkXInPlayerRange(leftVal: number, rightVal: number): boolean {
-    const xInPlayerRange = (rightVal >= player.leftPosition && rightVal <= player.leftPosition + BLOCK_WIDTH)
-        || (leftVal >= player.leftPosition && leftVal <= player.leftPosition + BLOCK_WIDTH);
-
-    return xInPlayerRange;
-}
-
-function checkYInPlayerRange(topVal: number, bottomVal: number): boolean {
-    const playerTop = parseFloat(getComputedStyle(player.domEl).top);
-    const playerBottom = playerTop + BLOCK_HEIGHT;
-    
-    // bottom is in player Y range
-    if (bottomVal >= playerTop && bottomVal <= playerBottom) {
-        return true;
-    }
-    // top is in player Y range
-    if (topVal >= playerTop && topVal <= playerBottom) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * Check for collision with a block. In event of collision detection we null out the
@@ -160,8 +173,11 @@ function gameTick() {
     } else if (topVal + (ball.rise * ball.velocity) > CONTAINER_HEIGHT - BALL_DIAMETER) {
         state.setValue(GAME_STATES.lost);
         resetInterval();
-        const container = document.querySelector<HTMLDivElement>(".game-container")!;
-        container.innerHTML = fragments.lost;
+        container.innerHTML = "";
+        gameMsg.textContent = "LOST";
+        startBtn.textContent = "Retry";
+        moveButtons("center");
+        removeWindowListeners();
         return;
     }
 
@@ -174,7 +190,10 @@ function gameTick() {
     }
 
     // Player collision check
-    if (checkXInPlayerRange(leftVal, rightVal) && checkYInPlayerRange(topVal, bottomVal)) {
+    if (
+        checkXInPlayerRange(player, leftVal, rightVal)
+        && checkYInPlayerRange(player, topVal, bottomVal)
+    ) {
         ball.rise *= -1;
         ball.velocity *= 1.05;
     }
@@ -188,8 +207,12 @@ function gameTick() {
         if (!haveBlocks) {
             state.setValue(GAME_STATES.won);
             resetInterval();
-            const container = document.querySelector<HTMLDivElement>(".game-container")!;
-            container.innerHTML = fragments.won;
+            container.innerHTML = "";
+            gameMsg.textContent = "WON";
+            gameMsg.classList.add("won");
+            startBtn.textContent = "Play Again";
+            moveButtons("center");
+            removeWindowListeners();
             return;
         }
 
@@ -208,14 +231,22 @@ function resetInterval() {
     gameInterval = undefined;
 }
 
+function quit(evt: KeyboardEvent) {
+    if (evt.shiftKey && evt.key === "q") {
+        if (gameInterval) resetInterval();
+        state.setValue(GAME_STATES.quit);
+    }
+}
+
+function removeWindowListeners() {
+    window.removeEventListener("unload", resetInterval);
+    window.removeEventListener("keypress", quit);
+}
+
 function runGame() {
+    gameMsg.classList.remove("won");
     window.addEventListener("unload", resetInterval);
-    window.addEventListener("keypress", evt => {
-        if (evt.shiftKey && evt.key === "q") {
-            if (gameInterval) resetInterval();
-            state.setValue(GAME_STATES.quit);
-        }
-    });
+    window.addEventListener("keypress", quit);
     
     const newGame = layoutGame();
     ball = newGame.ball;
@@ -223,7 +254,6 @@ function runGame() {
     player = newGame.player;
 
     // Start the game
-    stateDisplay = document.getElementById("state-display")!;
     state.setValue(GAME_STATES.in_progress);
     gameInterval = window.setInterval(gameTick, FPS);
 }
