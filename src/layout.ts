@@ -33,7 +33,7 @@ export const fragments = {
     `,
 };
 
-function layoutBlocks(container: HTMLDivElement) {
+function layoutBlocks(container: HTMLDivElement): BlockData {
     let blocks: HTMLDivElement[] = Array(ROWS * COLUMNS);
     let block: HTMLDivElement;
     let initialLeft: number = (CONTAINER_WIDTH / 2) - (LAYOUT_WIDTH / 2);
@@ -68,8 +68,8 @@ function layoutBlocks(container: HTMLDivElement) {
     };
 }
 
-function setupGameBall(container: HTMLDivElement) {
-    const ball = {
+function setupGameBall(container: HTMLDivElement): GameBall {
+    const ball: GameBall = {
         element: document.createElement("div"),
         rise: getRandomNumberBetween(-1, 1),
         run: getRandomNumberBetween(-1, 1),
@@ -86,7 +86,7 @@ function setupGameBall(container: HTMLDivElement) {
 }
 
  
-function setupPlayer(container: HTMLDivElement) {
+function setupPlayer(container: HTMLDivElement): Player {
     const start = (CONTAINER_WIDTH / 2) - (BLOCK_WIDTH / 2);
     const playerBlock = document.createElement("div");
 

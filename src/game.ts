@@ -9,7 +9,12 @@ import {
     FPS,
 } from "./constants.ts";
 import { BlockData, GameState, GAME_STATES, GameBall } from "./types.ts";
-import { checkXInPlayerRange, checkYInPlayerRange } from "./utils.ts";
+import {
+    checkXInPlayerRange,
+    checkXInRange,
+    checkYInPlayerRange,
+    checkYInRange,
+} from "./utils.ts";
 
 // Global variables
 let player: Player;
@@ -71,50 +76,65 @@ document.getElementById("start-game-btn")!.addEventListener("click", function() 
 
 /**
  * Check for collision with a block. In event of collision detection we null out the
- * block entry in our array and return the collidee.
+ * block entry in our array and return the collidee and the side of block collided with..
  *
- * @returns {HTMLDivElement | null} The block that was collided with.
  */
-function checkBlockCollision(top: number, right: number, left: number): HTMLDivElement | null {
+function checkBlockCollision(top: number, right: number, bottom: number, left: number) {
     // First check if we're generally within the X and Y coords of
     // some blocks to quickly determine if a collision is possible
     if (
         top > blockData.lowestY
         || (right < blockData.leftMostX || left > blockData.rightMostX)
     ) {
-        return null;
+        return { collidee: null, side: '' };
     }
 
     let blockStyle: CSSStyleDeclaration;
-    let block: HTMLDivElement | null;
-    let blockLeft: number;
+    let collidee: HTMLDivElement | null;
     let blockTop: number;
+    let blockLeft: number;
     
     // Check all blocks for potential collision
     for (let i = 0; i < blockData.blocks.length; i++) {
-        block = blockData.blocks[i];
+        collidee = blockData.blocks[i];
         
-        if (block === null) {
+        if (collidee === null) {
             continue;
         }
         
-        blockStyle = getComputedStyle(<Element>block);
+        blockStyle = getComputedStyle(<Element>collidee);
         blockTop = parseFloat(blockStyle.top);
-        
-        if (top >= blockTop && top <= blockTop + BLOCK_HEIGHT) {
-            blockLeft = parseFloat(blockStyle.left);
+        blockLeft = parseFloat(blockStyle.left);
+
+        if (
+            (checkYInRange(top, bottom, blockTop, blockTop + BLOCK_HEIGHT)
+            // The ball is taller than the blocks so handle "centered" case
+            || (top < blockTop && bottom > blockTop + BLOCK_HEIGHT))
+            && checkXInRange(left, right, blockLeft, blockLeft + BLOCK_WIDTH)
+        ) {
+            blockData.blocks[i] = null;
+
+            const distances = {
+                top: Math.abs(top - blockTop),
+                right: Math.abs(right - blockLeft + BLOCK_WIDTH),
+                bottom: Math.abs(bottom - blockTop + BLOCK_HEIGHT),
+                left: Math.abs(left - blockLeft),
+            };
             
-            if (
-                (left >= blockLeft && left <= blockLeft + BLOCK_WIDTH)
-                || (right >= blockLeft && right <= blockLeft + BLOCK_WIDTH)
-            ) {
-                blockData.blocks[i] = null;
-                return block;
+            switch (Math.min(...Object.values(distances))) {
+                case distances.top:
+                    return { collidee: collidee, side: 'top' };
+                case distances.right:
+                    return { collidee: collidee, side: 'right' };
+                case distances.bottom:
+                    return { collidee: collidee, side: 'bottom' };
+                case distances.left:
+                    return { collidee: collidee, side: 'right' };
             }
         }
     }
 
-    return null;
+    return { collidee: null, side: '' };
 }
 
 /**
@@ -199,7 +219,7 @@ function gameTick() {
     }
 
     // Block collision check
-    const collidee = checkBlockCollision(topVal, rightVal, leftVal);
+    const { collidee, side } = checkBlockCollision(topVal, rightVal, bottomVal, leftVal);
     if (collidee !== null) {
         collidee.parentNode?.removeChild(collidee);
         const haveBlocks = updateBlockData();
@@ -216,7 +236,11 @@ function gameTick() {
             return;
         }
 
-        ball.rise *= -1;
+        if (side === 'top' || side === 'bottom') {
+            ball.rise *= -1;
+        } else {
+            ball.run *= -1;
+        }
     }
 
     // Updating ball position values
