@@ -214,7 +214,25 @@ function gameTick() {
         checkXInPlayerRange(player, leftVal, rightVal)
         && checkYInPlayerRange(player, topVal, bottomVal)
     ) {
-        ball.rise *= -1;
+        const playerCenter = (player.leftPosition + player.leftPosition + BLOCK_WIDTH) / 2;
+        const ballCenter = (leftVal + rightVal) / 2;
+        const centerDiff = playerCenter - ballCenter; // - = right, + = left, 0 = center
+
+        if (Math.abs(centerDiff) < 5) {
+            ball.rise *= -1;
+        } else {
+            const dx = (Math.abs(centerDiff) % 5) / 100;
+            let val;
+
+            if (ball.run > 0) {
+                val = centerDiff > 0 ? 1 + dx : 1 - dx;
+            } else {
+                val = centerDiff > 0 ? 1 - dx : 1 + dx;
+            }
+
+            ball.rise *= -val;
+        }
+
         ball.velocity *= 1.05;
     }
 
